@@ -9,6 +9,9 @@ import string
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.patches import Rectangle
 from matplotlib.figure import Figure
+import umap
+import pandas as pd
+
 class Scatterplot(QWidget):
     """Widget that displays a scatterplot and allows the user to select coordinates with mouse clicks that are displayed as a rectangle on the plot. The points encased by the rectangle are emitted as a signal."""
     
@@ -21,7 +24,12 @@ class Scatterplot(QWidget):
     def __init__(self,points):
         super().__init__()
         self.setMouseTracking(True)
+        
+        # umap_embeddings = umap.UMAP(n_neighbors=5, n_components=2, metric='cosine').fit_transform(df['clip_embeddings'].tolist())
+        # df['umap_x'] = umap_embeddings[:,0]
+        # df['umap_y'] = umap_embeddings[:,1]
         self.points = points
+
         self.mean_x = np.mean(self.points[:,0])
         self.mean_y = np.mean(self.points[:,1])
         self.start_point = None

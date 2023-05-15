@@ -1,46 +1,46 @@
-##load a csv file containing a column 'image_paths' which contains paths to images and save the table in pickle format with an added column: 'clip_embeddings' which contains the CLIP embedding of the images
-##and produce a column "umap_x" and "umap_y" which contains the UMAP coordinates of the images based on the clip embeddings
-import pandas as pd
+from PIL import Image
 import clip
-import h5py
-import numpy as np
 import pandas as pd
-import os
-import cv2
+import torch
 import umap
-def process_data():
-    df = pd.read_pickle('/media/tjvsonsbeek/Data11/physionet.org/files/mimic-cxr-jpg/2.0.0/vkd_val_1904.pkl')
-    
-    # get clip embeddings
-    model, preprocess = clip.load('ViT-B/32', device='cuda')
-    # model = clip.load('ViT-B/32', device='cuda')
-    # print(df['Path_compr'])
-    print(model.encode_image(preprocess(cv2.imread(df['Path_compr'].values[0].replace('Data1','Data11'))).unsqueeze(0)))
-    df['clip_embeddings'] = df['Path_compr'].apply(lambda x: model.encode_image(preprocess(cv2.imread(x)).unsqueeze(0)).detach().cpu().numpy())
-    print(df['clip_embeddings'])
-    # create umap coordinates
+import argparse
+
+def process_data(data_path, output_path, image_path, column_names, image_size, model_name, device):
+    # load the data
+    df = pd.read_csv(data_path)
+    # load the model
+    model, preprocess = clip.load(model_name, device=device)
+    # load the images and preprocess them
+    images = [preprocess(Image.open(image_path + image_name)).unsqueeze(0) for image_name in df[column_names[0]].tolist()]
+    # get the CLIP embeddings
+    with torch.no_grad():
+        image_features = model.encode_image(torch.cat(images).to(device)).cpu().numpy()
+    # add the CLIP embeddings to the dataframe
+    df["clip_embeddings"] = image_features.tolist()
+    # add the UMAP coordinates to the dataframe
     umap_embeddings = umap.UMAP(n_neighbors=5, n_components=2, metric='cosine').fit_transform(df['clip_embeddings'].tolist())
     df['umap_x'] = umap_embeddings[:,0]
     df['umap_y'] = umap_embeddings[:,1]
-    
-    df.to_pickle('data.pkl')
-    
-    # create hdf5 archive
-    df = pd.read_pickle('data.pkl')
-    with h5py.File('data.hdf5', 'w') as f:
-        for i in range(len(df)):
-            image = cv2.imread(df['Path_compr'][i])
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            image = cv2.resize(image, (224,224))
-            f.create_dataset(str(i), data=image)
-            
 
-    # create tags for each image. If the value in a column in list column_names has value one the name of this column is added to the tags. Multiple tags are possible, and are concatenated with a space
-    column_names = ['No Finding', 'Enlarged Cardiomediastinum', 'Cardiomegaly', 'Lung Opacity',
-                      'Lung Lesion', 'Edema', 'Consolidation', 'Pneumonia', 'Atelectasis', 'Pneumothorax',
-                      'Pleural Effusion', 'Pleural Other', 'Fracture', 'Support Devices']
-    df['tags'] = df[column_names].apply(lambda x: ','.join([column_names[i] for i in range(len(x)) if x[i] == 1]), axis=1)
-    df.to_pickle('data.pkl')
+    # create a column containing the tags, by combining the 'str' values of the columns in 'column_names with a space seperator
+    df['tags'] = df[column_names].apply(lambda x: ' '.join(x.astype(str)), axis=1)
+    # save the dataframe
+    df.to_pickle(output_path)
     
+    return df
+
+def argparser():
+    parser = argparse.ArgumentParser(description='Load a csv file containing a column "image_paths" which contains paths to images and save the table in pickle format with an added column: "clip_embeddings" which contains the CLIP embedding of the images and produce a column "umap_x" and "umap_y" which contains the UMAP coordinates of the images based on the clip embeddings')
+    parser.add_argument('--data_path', type=str, help='path to the csv file containing the image paths')
+    parser.add_argument('--output_path', type=str, help='path to the output pickle file')
+    parser.add_argument('--image_path', type=str, help='path to the folder containing the images')
+    parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags')
+    parser.add_argument('--image_size', type=int, default=224, help='size of the images that should be loaded')
+    parser.add_argument('--model_name', type=str, default='ViT-B/32', help='name of the CLIP model that should be used')
+    parser.add_argument('--device', type=str, default='cuda', help='device that should be used to run the CLIP model on')
+    args = parser.parse_args()
+    return args
 if __name__ == '__main__':
-    process_data()
+    args = argparser()
+    process_data(args.data_path, args.output_path, args.image_path, args.column_names, args.image_size, args.model_name, args.device)
+

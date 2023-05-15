@@ -120,18 +120,28 @@ class Scatterplot(QWidget):
         for point in self.ax.collections:
             point.remove()
         
+
+        
         self.ax.scatter(self.points[:,0], self.points[:,1], s=5, c='blue')
+    
         for i in self.selected_points:
             point = self.points[i]
             if self.is_point_in_rectangle(point) or self.outside_points_visible:
                 self.ax.scatter(point[0], point[1], s=5, c='red')
         self.canvas.draw()
+        
     def is_point_in_rectangle(self,point):
         """Method that checks if a point is in the selection rectangle"""
         # get the coordinates of the rectangle
-        x1, y1 = self.start_point[0], self.end_point[1]
-        x2, y2 = self.end_point[0], self.start_point[1]
-
+        if self.start_point[0] < self.end_point[0]:
+            x1, x2 = self.start_point[0], self.end_point[0]
+        else:
+            x1, x2 = self.end_point[0], self.start_point[0]
+        if self.start_point[1] < self.end_point[1]:
+            y1, y2 = self.start_point[1], self.end_point[1]
+        else:   
+            y1, y2 = self.end_point[1], self.start_point[1]
+        
         # get the coordinates of the point
         x, y = point[0], point[1]
 
@@ -140,12 +150,12 @@ class Scatterplot(QWidget):
             return True
         else:
             return False
+        
     def set_outside_points_visible(self, visible):
         self.outside_points_visible = visible
         self.draw_scatterplot()
     def clear_selection(self):
         # Remove the rectangle from the plot
-
         for patch in self.ax.patches:
             patch.remove()
         

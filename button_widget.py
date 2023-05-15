@@ -12,21 +12,22 @@ class ButtonWidget(QWidget):
     buttonClicked = pyqtSignal(list)
     buttonUnclicked = pyqtSignal(list)
     checkboxToggled = pyqtSignal(bool)
-    def __init__(self, tags):
+    def __init__(self, tags, num_buttons=5):
         super().__init__()
         
         self.tags = tags
-
+        self.num_buttons = num_buttons
         # Initialize selected word index
         self.selectedWordIndex = None
 
             
         # Create buttons for top words
-        self.topWords = [('test',1),( 'test2',2),( 'test3',3),( 'test4',4),( 'test5',5)]
+        self.topWords = []
+
         self.buttons = []
         self.buttonLayout = QVBoxLayout()
-        for i, word in enumerate(self.topWords):
-            button = QPushButton("{}: {}".format(word[0],word[1]))
+        for i in range(self.num_buttons):
+            button = QPushButton("")
             button.setCheckable(True)
             button.clicked.connect(lambda checked, i=i: self.onButtonClicked(i))
             button.toggled.connect(lambda checked, i=i: self.onButtonToggled(checked, i))
@@ -68,12 +69,15 @@ class ButtonWidget(QWidget):
     def rename_buttons(self, topwords):
         self.topWords = topwords
         print(topwords)
-        for i, word in enumerate(self.topWords[:5]):
+        for i, word in enumerate(self.topWords[:self.num_buttons]):
             self.buttons[i].setText("{}: {}".format(word[0],word[1]))
+        if len(topwords) < self.num_buttons:
+            for i in range(len(topwords),self.num_buttons):
+                self.buttons[i].setText("")
             
     def find_indices_with_tag(self,tag):
         indices = []
         for i, string in enumerate(self.tags):
-            if tag in string:
+            if tag in string and tag != "":
                 indices.append(i)
         return indices

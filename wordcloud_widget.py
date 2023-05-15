@@ -15,12 +15,13 @@ class SelectedScatterplot(QWidget):
         self.tags = tags
         self.selected_points = list(range(100))
         self.setFixedSize(300, 300)
-        hbox = QHBoxLayout()
+        hbox = QVBoxLayout()
         self.setLayout(hbox)
         self.wordcloud_scene = QGraphicsScene()
         self.wordcloud_view = QGraphicsView(self.wordcloud_scene)
         hbox.addWidget(self.wordcloud_view)
         self.set_selected_points(self.selected_points, initial=True)
+    
     def set_selected_points(self, selected_points, initial=False):
         if self.selected_points!=selected_points or initial:
             self.selected_points = selected_points

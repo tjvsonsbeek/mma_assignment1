@@ -115,13 +115,10 @@ class Scatterplot(QWidget):
     def draw_scatterplot(self, selected_points=None):
         """method that makes a scatterplot in blue for all points. If points are selected these are plotted in red. leave the rectangle on the plot"""
         # remove the old points from the plot
-        if selected_points:
+        if selected_points!=None:
             self.selected_points = selected_points
         for point in self.ax.collections:
             point.remove()
-        
-
-        
         self.ax.scatter(self.points[:,0], self.points[:,1], s=5, c='blue')
     
         for i in self.selected_points:

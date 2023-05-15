@@ -8,39 +8,36 @@ import sys
 
 
 class ButtonWidget(QWidget):
-    # Define custom signals
+    # Define signals
     buttonClicked = pyqtSignal(list)
-    buttonUnclicked = pyqtSignal(list)
     checkboxToggled = pyqtSignal(bool)
     def __init__(self, tags, num_buttons=5):
         super().__init__()
-        
+        ## data setup and widget parameters
         self.tags = tags
         self.num_buttons = num_buttons
-        # Initialize selected word index
-        self.selectedWordIndex = None
+        
+        # Initialize selected button index
+        self.selectedButtonIndex = None
 
             
-        # Create buttons for top words
-        self.topWords = []
-
+        # Create buttons
         self.buttons = []
         self.buttonLayout = QVBoxLayout()
         for i in range(self.num_buttons):
             button = QPushButton("")
             button.setCheckable(True)
             button.clicked.connect(lambda checked, i=i: self.onButtonClicked(i))
-            button.toggled.connect(lambda checked, i=i: self.onButtonToggled(checked, i))
+            # button.toggled.connect(lambda checked, i=i: self.onButtonToggled(checked, i))
             self.buttons.append(button)
             self.buttonLayout.addWidget(button)
 
-
         # Create checkbox
-        self.checkbox = QCheckBox("Also show points out of the rectangle area")
+        self.checkbox = QCheckBox("Show points out of the selected area")
         self.checkbox.toggled.connect(self.onCheckboxToggled)
         self.buttonLayout.addWidget(self.checkbox)
         
-        
+
         # Create layout for widget
         layout = QHBoxLayout()
         layout.addLayout(self.buttonLayout)
@@ -49,24 +46,23 @@ class ButtonWidget(QWidget):
         
         
     def onButtonClicked(self, index):
-        if index != self.selectedWordIndex:
-            # Uncheck previously selected button, if any
-            if self.selectedWordIndex is not None:
-                self.buttons[self.selectedWordIndex].setChecked(False)
-
-            # Update selected word index and emit signal with indices of points to highlight
-            self.selectedWordIndex = index
+        """if the button is unchecked, check and emit the clicked signal, else uncheck and emit the unclicked signal. The emitted signal contains the indices of the points that have the tag of the button."""
+        if self.buttons[index].isChecked():
+            if self.selectedButtonIndex is not None:
+                self.buttons[self.selectedButtonIndex].setChecked(False)
+            self.selectedButtonIndex = index
+            self.buttons[index].setChecked(True)
             self.buttonClicked.emit(self.find_indices_with_tag(self.buttons[index].text().split(':')[0]))
-
-    def onButtonToggled(self, checked, index):
-        if not checked:
-            # If the button was unchecked, emit the unclicked signal
-            self.selectedWordIndex = None
-            self.buttonUnclicked.emit([])
+        else:
+            self.buttons[index].setChecked(False)
+            self.buttonClicked.emit([])
+            
     def onCheckboxToggled(self, checked):
+        """Emit signal with checkbox state"""
         self.checkboxToggled.emit(checked)
 
     def rename_buttons(self, topwords):
+        """Rename buttons with top words. The button will be empty if there are less than self.num_buttons words."""
         self.topWords = topwords
         print(topwords)
         for i, word in enumerate(self.topWords[:self.num_buttons]):
@@ -76,6 +72,7 @@ class ButtonWidget(QWidget):
                 self.buttons[i].setText("")
             
     def find_indices_with_tag(self,tag):
+        """Find indices of points with a given tag. These are used to connect words in the wordcloud with points in the scatterplot."""
         indices = []
         for i, string in enumerate(self.tags):
             if tag in string and tag != "":

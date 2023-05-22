@@ -1,30 +1,13 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QWidget,QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QGraphicsRectItem
-from PyQt6.QtGui import QPainter, QMouseEvent, QPen,QBrush,QColor,QPixmap,QImage
-from PyQt6.QtCore import Qt, QPoint, QRect, pyqtSignal  
-from PIL.ImageQt import ImageQt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QWidget
 
-import random
-import string
-from wordcloud import WordCloud
-
-from umap_selection_matplotlib import Scatterplot
-from wordcloud_widget import SelectedScatterplot
-from button_widget import ButtonWidget
+from widgets.umap_selection_matplotlib import ScatterplotWidget
+from widgets.wordcloud_widget import WordcloudWidget
+from widgets.button_widget import ButtonWidget
 import numpy as np
+import pandas as pd
+import h5py
 
-import random
-words = ["apple", "banana", "orange", "grape", "kiwi"]
-
-def generate_random_word_list(n, word_list):
-    word_list_size = len(word_list)
-    random_word_list = []
-
-    for _ in range(n):
-        random_word = random.choice(word_list)
-        random_word_list.append(random_word)
-
-    return random_word_list        
         
         
 
@@ -33,12 +16,21 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         ## dataloading
-        points = np.random.rand(100, 2)
-        tags = generate_random_word_list(100, words)
+        df = pd.read_pickle('birds.pkl')
+        points = np.zeros((1000,2))
+        points[:,0] = df['umap_x'].values
+        points[:,1] = df['umap_y'].values
+        tags = df['tags'].values
+
+        output_file = "image_features.h5"
+        # add the UMAP coordinates to the dataframe
+        with h5py.File(output_file, "r") as hf:
+            image_features = hf["image_features"][:]
+
         
         ## inialize widgets
-        scatterplot = Scatterplot(points)
-        selected_scatterplot = SelectedScatterplot(tags)
+        scatterplot = ScatterplotWidget(image_features)
+        wordcloud = WordcloudWidget(tags)
         button_widget = ButtonWidget(tags)
         
         ## set up main window 
@@ -58,7 +50,7 @@ class MainWindow(QMainWindow):
         hbox2 = QHBoxLayout()
         hbox2.addWidget(scatterplot)
         hbox2.addWidget(button_widget)
-        hbox2.addWidget(selected_scatterplot)
+        hbox2.addWidget(wordcloud)
         
         ## set up layout for the full window
         vbox = QVBoxLayout()
@@ -73,11 +65,12 @@ class MainWindow(QMainWindow):
         ## connect signals and slots 
         
         # connect selected indices from scatterplot to the wordcloud       
-        scatterplot.selected_idx.connect(selected_scatterplot.set_selected_points)
+        scatterplot.selected_idx.connect(wordcloud.set_selected_points)
+        scatterplot.selected_idx.connect(button_widget.uncheck_all_buttons)
         # set the label in the header to the current mouse position
         scatterplot.label.connect(label.setText)
         # connect the top words in the wordcloud to the buttons
-        selected_scatterplot.top_words_changed.connect(button_widget.rename_buttons)
+        wordcloud.top_words_changed.connect(button_widget.rename_buttons)
         # highlight the pointss with the associated tag of the button in the scatterplot
         button_widget.buttonClicked.connect(scatterplot.draw_scatterplot)
         # toggle the visibility of the points outside the selected rectangular region

@@ -1,18 +1,14 @@
-import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QWidget,QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QGraphicsRectItem
-from PyQt6.QtGui import QPainter, QMouseEvent, QPen,QBrush,QColor,QPixmap,QImage
-from PyQt6.QtCore import Qt, QPoint, QRect, pyqtSignal  
-from PIL.ImageQt import ImageQt
+from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QPushButton, QWidget,QGraphicsScene, QGraphicsView, QGraphicsPixmapItem, QGraphicsRectItem, QSlider
+from PyQt6.QtCore import Qt, pyqtSignal  
 import numpy as np
-import random
-import string
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.patches import Rectangle
 from matplotlib.figure import Figure
 import umap
-import pandas as pd
 
-class Scatterplot(QWidget):
+
+class ScatterplotWidget(QWidget):
     """Widget that displays a scatterplot and allows the user to select coordinates with mouse clicks that are displayed as a rectangle on the plot. The points encased by the rectangle are emitted as a signal."""
     
     
@@ -25,16 +21,16 @@ class Scatterplot(QWidget):
         super().__init__()
         self.setMouseTracking(True)
         
-        # umap_embeddings = umap.UMAP(n_neighbors=5, n_components=2, metric='cosine').fit_transform(df['clip_embeddings'].tolist())
-        # df['umap_x'] = umap_embeddings[:,0]
-        # df['umap_y'] = umap_embeddings[:,1]
         self.points = points
 
         self.mean_x = np.mean(self.points[:,0])
         self.mean_y = np.mean(self.points[:,1])
         self.start_point = None
         self.end_point = None
-        self.setFixedSize(300, 300)
+
+        # create a button under the scatterplot that removes the rectangle and the selected points
+        self.clear_button = QPushButton("Clear Selection")
+        self.clear_button.clicked.connect(self.clear_selection)
         
         # create a matplotlib figure and add a subplot
         self.figure = Figure()
@@ -44,19 +40,30 @@ class Scatterplot(QWidget):
         # set up the layout
         layout = QVBoxLayout(self)
         layout.addWidget(self.canvas)
+        layout.addWidget(self.clear_button)
         
         self.selected_points = []
         self.outside_points_visible = False
         self.draw_scatterplot()
-        self.canvas.draw()
-        
-        
         
         #connect the mouse press event to the selection method
         self.canvas.mpl_connect('button_press_event', self.on_canvas_click)
         #connect the mouse move event to the label method
         self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
-    
+        # Set initial widget size
+        self.resize_widget()
+
+    def resizeEvent(self, event):
+        # Resize widget while keeping it square
+        size = min(self.width(), self.height())
+        self.setFixedSize(size, size)
+        self.resize_widget()
+
+    def resize_widget(self):
+        # Adjust scatter plot size to fit the widget
+        size = min(self.canvas.width(), self.canvas.height())
+        self.canvas.setFixedSize(size, size)
+
     def on_mouse_move(self, event):
         """Method that handles mouse movement on the canvas"""
         # Ignore mouse movement outside the plot area
@@ -79,13 +86,18 @@ class Scatterplot(QWidget):
             else:
                 self.end_point = (event.xdata, event.ydata)
                 self.draw_selection_rectangle()
+                # reset the drawing of the selected points
+                self.selected_points = []
+                self.draw_scatterplot()
         
         # right click to select points
         elif event.button == 3:
             self.start_point = (event.xdata, event.ydata)
             if self.start_point and self.end_point:
                 self.draw_selection_rectangle()
-
+                # reset the drawing of the selected points
+                self.selected_points = []
+                self.draw_scatterplot()
         
     def draw_selection_rectangle(self):
         """Method that draws the selection rectangle on the plot"""
@@ -159,8 +171,12 @@ class Scatterplot(QWidget):
     def set_outside_points_visible(self, visible):
         self.outside_points_visible = visible
         self.draw_scatterplot()
+    
     def clear_selection(self):
         # Remove the rectangle from the plot
+        self.selected_idx.emit([])
         for patch in self.ax.patches:
             patch.remove()
+        self.draw_scatterplot([])
+        
         

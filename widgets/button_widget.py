@@ -1,10 +1,6 @@
-from PyQt6.QtCore import Qt, QSize,pyqtSignal, QObject
-from PyQt6.QtGui import QPainter, QPen, QPixmap
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QCheckBox, QLabel
-from PIL.ImageQt import ImageQt
-from wordcloud import WordCloud
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QCheckBox
 
-import sys
 
 
 class ButtonWidget(QWidget):
@@ -20,7 +16,6 @@ class ButtonWidget(QWidget):
         # Initialize selected button index
         self.selectedButtonIndex = None
 
-            
         # Create buttons
         self.buttons = []
         self.buttonLayout = QVBoxLayout()
@@ -37,11 +32,9 @@ class ButtonWidget(QWidget):
         self.checkbox.toggled.connect(self.onCheckboxToggled)
         self.buttonLayout.addWidget(self.checkbox)
         
-
         # Create layout for widget
         layout = QHBoxLayout()
         layout.addLayout(self.buttonLayout)
-        layout.addStretch()
         self.setLayout(layout)
         
         
@@ -64,13 +57,18 @@ class ButtonWidget(QWidget):
     def rename_buttons(self, topwords):
         """Rename buttons with top words. The button will be empty if there are less than self.num_buttons words."""
         self.topWords = topwords
-        print(topwords)
         for i, word in enumerate(self.topWords[:self.num_buttons]):
             self.buttons[i].setText("{}: {}".format(word[0],word[1]))
         if len(topwords) < self.num_buttons:
             for i in range(len(topwords),self.num_buttons):
                 self.buttons[i].setText("")
-            
+    def uncheck_all_buttons(self):
+        """Uncheck all selected buttons"""
+        for index in range(len(self.buttons)):
+            if self.buttons[index].isChecked():
+                self.buttons[index].setChecked(False)
+        self.selectedButtonIndex = None
+
     def find_indices_with_tag(self,tag):
         """Find indices of points with a given tag. These are used to connect words in the wordcloud with points in the scatterplot."""
         indices = []

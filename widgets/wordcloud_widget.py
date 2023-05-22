@@ -9,7 +9,7 @@ import string
 from wordcloud import WordCloud
 
 
-class SelectedScatterplot(QWidget):
+class WordcloudWidget(QWidget):
     top_words_changed = pyqtSignal(list)
     def __init__(self,tags):
         super().__init__()
@@ -27,7 +27,19 @@ class SelectedScatterplot(QWidget):
         ## initialize wordcloud with all points from scatterplot
         self.selected_points = None
         self.set_selected_points(list(range(len(tags))))
-    
+        # Set initial widget size
+        self.resize_widget()
+
+    def resizeEvent(self, event):
+        # Resize widget while keeping it square
+        size = min(self.width(), self.height())
+        self.setFixedSize(size, size)
+        self.resize_widget()
+
+    def resize_widget(self):
+        # Adjust Word Cloud size to fit the widget
+        size = min(self.wordcloud_view.width(), self.wordcloud_view.height())
+        self.wordcloud_view.setFixedSize(size, size)
     def set_selected_points(self, selected_points):
         """Method that sets the selected points and updates the wordcloud"""
         ## only update the wordcloud if the selected points in the scatterplot have changed

@@ -7,11 +7,11 @@ class ButtonWidget(QWidget):
     # Define signals
     buttonClicked = pyqtSignal(list)
     checkboxToggled = pyqtSignal(bool)
-    def __init__(self, tags, num_buttons=5):
+    def __init__(self, tags, config):
         super().__init__()
         ## data setup and widget parameters
         self.tags = tags
-        self.num_buttons = num_buttons
+        self.num_buttons = int(config['buttons']['num_buttons'])
         
         # Initialize selected button index
         self.selectedButtonIndex = None

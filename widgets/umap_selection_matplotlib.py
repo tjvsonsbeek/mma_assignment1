@@ -17,7 +17,7 @@ class ScatterplotWidget(QWidget):
     #signal that emits the current mouse position
     label = pyqtSignal(str)
     
-    def __init__(self,points):
+    def __init__(self,points, config):
         super().__init__()
         self.setMouseTracking(True)
         

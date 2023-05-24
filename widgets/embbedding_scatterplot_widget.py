@@ -5,6 +5,7 @@ import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.patches import Rectangle
 from matplotlib.figure import Figure
+from utils.ZoomPan import ZoomPan
 import umap
 
 
@@ -20,11 +21,18 @@ class ScatterplotWidget(QWidget):
     def __init__(self,points, config):
         super().__init__()
         self.setMouseTracking(True)
-        
+    
         self.points = points
-
         self.mean_x = np.mean(self.points[:,0])
         self.mean_y = np.mean(self.points[:,1])
+        
+        self.points_size = float(config['scatterplot']['point_size'])
+        self.points_color = config['scatterplot']['points_color']
+        self.selection_color = config['scatterplot']['selection_color']
+        self.selection_points_size = float(config['scatterplot']['selection_point_size'])
+        self.rectangle_color = config['scatterplot']['rectangle_color']
+        self.rectangle_opacity = float(config['scatterplot']['rectangle_opacity'])
+        
         self.start_point = None
         self.end_point = None
 
@@ -36,6 +44,9 @@ class ScatterplotWidget(QWidget):
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.ax = self.figure.add_subplot(111)
+        self.zp = ZoomPan()
+        self.figZoom = self.zp.zoom_factory(self.ax, base_scale = 1.5)
+        self.figPan = self.zp.pan_factory(self.ax)
         
         # set up the layout
         layout = QVBoxLayout(self)
@@ -77,7 +88,7 @@ class ScatterplotWidget(QWidget):
         """Method that handles mouse clicks on the canvas"""
         # Ignore clicks outside the plot area
         if event.inaxes is None:
-            print("click outside axes")
+            print("click outside axes. Ignoring. Please click inside the axes of the scatterplot. With a right and left click you can select a rectangular region of points")
             return
         # left click to select points
         if event.button == 1:
@@ -114,7 +125,7 @@ class ScatterplotWidget(QWidget):
         #remove the old rectangle if it exists
         self.clear_selection()           
         # add the new rectangle to the plot
-        self.rect = Rectangle((x, y), w, h, facecolor='red', alpha=0.5)
+        self.rect = Rectangle((x, y), w, h, facecolor=self.rectangle_color, alpha=self.rectangle_opacity)
         self.ax.add_patch(self.rect)
         
         #update the plot
@@ -139,12 +150,12 @@ class ScatterplotWidget(QWidget):
             self.selected_points = selected_points
         for point in self.ax.collections:
             point.remove()
-        self.ax.scatter(self.points[:,0], self.points[:,1], s=5, c='blue')
+        self.ax.scatter(self.points[:,0], self.points[:,1], s=self.points_size, c=self.points_color)
     
         for i in self.selected_points:
             point = self.points[i]
             if self.is_point_in_rectangle(point) or self.outside_points_visible:
-                self.ax.scatter(point[0], point[1], s=5, c='red')
+                self.ax.scatter(point[0], point[1], s=self.selection_points_size, c=self.selection_color)
         self.canvas.draw()
         
     def is_point_in_rectangle(self,point):

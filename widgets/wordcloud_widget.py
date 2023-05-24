@@ -20,6 +20,8 @@ class WordcloudWidget(QWidget):
         self.tags = tags
         self.tag_separator = config['wordcloud']['tag_separator']
         
+        self.wordcloud_background = config['wordcloud']['background_color']
+        
         ## widget layout
         self.layout = QVBoxLayout(self)
         self.label = QLabel()
@@ -31,7 +33,7 @@ class WordcloudWidget(QWidget):
         self.set_selected_points(list(range(len(tags))))
 
     def set_selected_points(self, selected_points):
-        """Method that sets the selected points and updates the wordcloud"""
+        """set the selected points and updates the wordcloud"""
         ## only update the wordcloud if the selected points in the scatterplot have changed
         if self.selected_points!=selected_points:
             self.selected_points = selected_points
@@ -44,32 +46,32 @@ class WordcloudWidget(QWidget):
             self.draw_wordcloud(selected_tags)
     
     def draw_wordcloud(self, selected_tags):
-        """Method that draws the wordcloud"""
+        """draw a wordcloud"""
+        
+        # compute the word frequencies
         word_counts = {}
-        print(selected_tags)
         for tag in selected_tags:
             if tag in word_counts:
                 word_counts[tag] += 1
             else:
                 word_counts[tag] = 1
-        print(word_counts)
-        self.wordcloud = WordCloud(width = 300, height = 300,background_color='white').generate_from_frequencies(word_counts)
-        print(self.wordcloud)
+                
+        self.wordcloud = WordCloud(background_color=self.wordcloud_background).generate_from_frequencies(word_counts)
         
+        # saving wordcloud as png to to prevent the wordcloud from being distorted when resizing the window and converting it to a pixmap
         self.wordcloud.to_file("wordcloud.png")
-        
         pixmap = QPixmap("wordcloud.png")
+        
+        # remove previous wordcloud
         self.label.clear()
-
+        
         self.label.setPixmap(pixmap)
         
-        
-        
-        top_words = self.get_top_words(word_counts,5)
+        # compute the top words and emit a signal with the word frequencies in sorted order
+        top_words = self.get_top_words(word_counts)
         self.top_words_changed.emit(top_words)
-    def get_top_words(self,word_counts,n):
-        """Method that returns the top n words from the wordcloud"""
+    def get_top_words(self,word_counts):
+        """Method that returns the word frequncies from the wordcloud sorted from most to least frequent"""
         sorted_word_counts = sorted(word_counts.items(), key=lambda x: x[1], reverse=True)
-        print(sorted_word_counts)
         return sorted_word_counts
-       
+    

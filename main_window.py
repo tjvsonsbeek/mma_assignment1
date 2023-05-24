@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QHBoxLayout, QWidget
 import configparser
-from widgets.umap_selection_matplotlib import ScatterplotWidget
+from widgets.embbedding_scatterplot_widget import ScatterplotWidget
 from widgets.wordcloud_widget import WordcloudWidget
 from widgets.button_widget import ButtonWidget
 from widgets.image_widget import ImageWidget
@@ -59,7 +59,6 @@ class MainWindow(QMainWindow):
         
         num_samples = int(config['main']['num_samples'])
         sample_selection = str(config['main']['sample_selection'])
-        print(sample_selection)
         ## dataloading
         df = pd.read_pickle(data_path)
         with h5py.File(images_path, "r") as hf:
@@ -69,13 +68,13 @@ class MainWindow(QMainWindow):
         if sample_selection == 'random':
             random_indices = np.random.choice(len(df), num_samples, replace=False)
             tags = df['tags'].iloc[random_indices].values
-            points = df[['tsne_x','tsne_y']].iloc[random_indices].values
+            points = df[['umap_x','umap_y']].iloc[random_indices].values
             image_features = image_features[random_indices]
-            image_paths = df['filepaths'].iloc[random_indices].values
+            img_paths = df['filepaths'].iloc[random_indices].values
 
         if sample_selection == 'first':
             tags = df['tags'].iloc[:num_samples].values
-            points = df[['tsne_x','tsne_y']].iloc[:num_samples].values
+            points = df[['umap_x','umap_y']].iloc[:num_samples].values
             image_features = image_features[:num_samples]
             img_paths = df['filepaths'].iloc[:num_samples].values
         ## recompute the embedding coordinates
@@ -87,7 +86,7 @@ class MainWindow(QMainWindow):
                 
 
         ## inialize widgets
-        scatterplot = ScatterplotWidget(image_features, config)
+        scatterplot = ScatterplotWidget(points, config)
         wordcloud = WordcloudWidget(tags, config)
         button_widget = ButtonWidget(tags, config)
         image_widget = ImageWidget(img_paths, config)

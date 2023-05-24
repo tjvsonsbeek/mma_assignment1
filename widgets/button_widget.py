@@ -56,9 +56,12 @@ class ButtonWidget(QWidget):
 
     def rename_buttons(self, topwords):
         """Rename buttons with top words. The button will be empty if there are less than self.num_buttons words."""
-        self.topWords = topwords
+        self.topWords = topwords 
         for i, word in enumerate(self.topWords[:self.num_buttons]):
-            self.buttons[i].setText("{}: {}".format(word[0],word[1]))
+            if word[0] == "": 
+                self.buttons[i].setText("")
+            else:
+                self.buttons[i].setText("{}: {}".format(word[0],word[1]))
         if len(topwords) < self.num_buttons:
             for i in range(len(topwords),self.num_buttons):
                 self.buttons[i].setText("")

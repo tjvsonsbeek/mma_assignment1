@@ -5,11 +5,12 @@ from PyQt6.QtGui import QPixmap
 import os
 import numpy as np
 import random
+from PIL import Image
 class ImageWidget(QWidget):
     """pyqt widget that has as input a list of image path. It takes an input signal of indices. Based on that a random number of images is displayed (max n) in two rows"""
     def __init__(self,img_paths, config):
         super().__init__()
-        self.base_path = "/home/tjvsonsbeek/Documents/Datasets/birds/"
+        self.base_path = config['main']['base_dataset_path']
         self.img_paths = img_paths
         self.images_per_row = 10
         self.rows = 2
@@ -37,7 +38,6 @@ class ImageWidget(QWidget):
             row = i // self.images_per_row
             self.create_image_labels(img_path, col, row)
     def create_image_labels(self,image_path, col, row):
-        # for image_path in self.selected_images:
         pixmap = QPixmap(os.path.join(self.base_path,image_path))
         pixmap = pixmap.scaled(100, 100)  # Adjust the size of the images as needed
         label = QLabel(self)
@@ -49,7 +49,7 @@ class ImageWidget(QWidget):
         if selected_points==[]:
             self.selected_images = random.sample(self.img_paths.tolist(),min(len(self.img_paths),self.images_per_row*self.rows))
             self.update()
-        if self.selected_points!=selected_points:
+        else:
             self.selected_points = selected_points
             self.selected_images = random.sample(self.img_paths[self.selected_points].tolist(),min(len(self.img_paths[self.selected_points]),self.images_per_row*self.rows))
             self.update()

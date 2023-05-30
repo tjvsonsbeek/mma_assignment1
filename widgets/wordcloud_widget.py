@@ -39,9 +39,11 @@ class WordcloudWidget(QWidget):
             self.selected_points = selected_points
             ## add all tags from the selected points to a list. tags are separated by a space
             selected_tags = []
+            
             for i in self.selected_points:
+                print(self.tags[i])
                 for t in self.tags[i].split(self.tag_separator):
-                    selected_tags.append(t)
+                    if t is not '': selected_tags.append(t)
             selected_tags = [''] if len(selected_tags) == 0 else selected_tags
             self.draw_wordcloud(selected_tags)
     

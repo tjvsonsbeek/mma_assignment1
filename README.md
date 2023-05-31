@@ -19,7 +19,13 @@ This dashboard is designed to provide data analysis of UMAP embeddings of the bi
 
 Overall, this dashboard provides an interactive and informative interface for exploring the UMAP embeddings of the birds dataset. Users can visually analyze the clusters, generate word clouds based on selections, highlight specific tag categories, and view corresponding images to gain insights and understanding of the dataset.
 
-**TODO:** Dive into the code to understand the flow of information in the dashboard. How can it be improved? 
+
+## Instructions 
+
+1. **Create a python environement using the 'requirements.txt' file**
+2. **Prepare one of the datasets through the dataloading scripts/adapt it for your own dataset/download it from here:**
+2. **Define the locations of the dataset, the .pkl file and the .h5 file in config.ini**
+4. **Run the dashboard with the following command: "python main_window.py"**
 
 ## PyQt Basics
 

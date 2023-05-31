@@ -73,7 +73,7 @@ def xmlToDF(base_path):
         counter+=1
     return df
     
-def get_clip_embeddings(model_name, device, df, batch_size=1, base_path='', output_file='image_features.h5'):
+def get_clip_embeddings(model_name, device, df, batch_size=1, base_path='', output_file='test.h5'):
     # load the model
     model, preprocess = clip.load(model_name, device=device)
     image_features = []
@@ -82,13 +82,9 @@ def get_clip_embeddings(model_name, device, df, batch_size=1, base_path='', outp
     with torch.no_grad(), h5py.File(output_file, "w") as hf:
         for i, image_name in tqdm(enumerate(df['filepaths'])):
             ## load the image, resize to 224x224 and load clip embeddings
-            # try:
-                image = Image.open(image_name)
-                image_input = preprocess(image).unsqueeze(0).to(device)
-                image_features.append(model.encode_image(image_input).cpu().numpy())
-            # except:
-            #     print(image_input.shape)
-            #     skipped_indices.append(i)
+            image = Image.open(image_name)
+            image_input = preprocess(image).unsqueeze(0).to(device)
+            image_features.append(model.encode_image(image_input).cpu().numpy())
     image_features = np.concatenate(image_features, axis=0)
 
     # Print skipped indices
@@ -125,14 +121,14 @@ def process_data(dataset_path, output_path, column_names, image_size, model_name
     # create a column containing the tags, by combining the 'str' values of the columns in 'column_names with a ; 
     df['tags'] = df[column_names].apply(lambda x: ';'.join(x.astype(str)), axis=1)
     # save the dataframe
-    df.to_pickle('openI_1000.pkl')
+    df.to_pickle(output_path)
     return df
 
 def argparser():
     parser = argparse.ArgumentParser(description='Load a csv file containing a column "image_paths" which contains paths to images and save the table in pickle format with an added column: "clip_embeddings" which contains the CLIP embedding of the images and produce a column "umap_x" and "umap_y" which contains the UMAP coordinates of the images based on the clip embeddings')
     parser.add_argument('--dataset_path', type=str, help='path to the csv file containing the image paths', default='/home/tjvsonsbeek/Documents/Datasets/openI')
     parser.add_argument('--output_path', type=str, help='path to the output pickle file',default='/home/tjvsonsbeek/Documents/Datasets/birds/birds.pkl')
-    parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags', default=['tags'])#),'scientific name'])
+    parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags', default=['tags'])
     parser.add_argument('--image_size', type=int, default=224, help='size of the images that should be loaded')
     parser.add_argument('--model_name', type=str, default='ViT-B/32', help='name of the CLIP model that should be used')
     parser.add_argument('--device', type=str, default='cuda', help='device that should be used to run the CLIP model on')

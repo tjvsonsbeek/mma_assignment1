@@ -23,31 +23,22 @@ def get_clip_embeddings(model_name, device, df, batch_size=1, base_path='', outp
     # load the model
     model, preprocess = clip.load(model_name, device=device)
     image_features = []
-    skipped_indices = []
 
     with torch.no_grad(), h5py.File(output_file, "w") as hf:
         for i, image_name in tqdm(enumerate(df['filepaths'])):
             ## load the image, resize to 224x224 and load clip embeddings
-            # try:
-                image = Image.open(os.path.join(base_path,image_name))
-                image_input = preprocess(image).unsqueeze(0).to(device)
-                image_features.append(model.encode_image(image_input).cpu().numpy())
-            # except:
-            #     print(image_input.shape)
-            #     skipped_indices.append(i)
+            image = Image.open(os.path.join(base_path,image_name))
+            image_input = preprocess(image).unsqueeze(0).to(device)
+            image_features.append(model.encode_image(image_input).cpu().numpy())
     image_features = np.concatenate(image_features, axis=0)
 
-    # Print skipped indices
-    print("Skipped Indices:", skipped_indices)
     # Save image features to an H5 file
-
     with h5py.File(output_file, "w") as hf:
         hf.create_dataset("image_features", data=image_features)
     return skipped_indices
-def make_csv(dataset_path, train=True):
-    
+def make_df(dataset_path, train=True):
+    """make a dataframe containing the image paths and the tags"""
     df = pd.DataFrame(columns=["filepaths", "tags"])
-
     train_test_split = pd.read_csv(os.path.join(dataset_path, 'train_test_split.txt'), sep=' ', index_col=0, header=None)
     id_to_img = pd.read_csv(os.path.join(dataset_path, 'images.txt'), sep=' ', index_col=0, header=None)
     classes = pd.read_csv(os.path.join(dataset_path, 'classes.txt'), sep='.', index_col=0, header=None)
@@ -56,11 +47,9 @@ def make_csv(dataset_path, train=True):
         is_train_image = 1
     else:
         is_train_image = 0
-        
+
     img_ids = train_test_split[train_test_split[1]== is_train_image].index.tolist()
-    print(classes.head())
-    print(id_to_img.head())
-    print(classes.columns)
+    ## fill dataframe with paths to images and tags (labels)
     for idx in tqdm(range(len(img_ids))):
         img_id = img_ids[idx]
         img_name = id_to_img[id_to_img.index== img_id].values[0][0]
@@ -78,12 +67,10 @@ def process_data(dataset_path, output_path, column_names, image_size, model_name
     # load the data
 
         
-    df = make_csv(dataset_path, train=True)
+    df = make_df(dataset_path, train=True)
 
-    print(df.head()) 
-    skipped_indices = get_clip_embeddings(model_name, device, df, base_path=dataset_path, output_file='openI_image_features_1000.h5')
-    # drop skipped indices
-    df = df.drop(skipped_indices)
+    get_clip_embeddings(model_name, device, df, base_path=dataset_path, output_file='openI_image_features_1000.h5')
+
 # 
     output_file = "openI_image_features_1000.h5"
     # add the UMAP coordinates to the dataframe

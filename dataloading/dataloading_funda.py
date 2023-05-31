@@ -88,9 +88,9 @@ def parse_real_estate_json(json_path):
     
 def argparser():
     parser = argparse.ArgumentParser(description='Load the Funda ads jsonlines file containing image_paths to real estate images and save the table in pickle format with an added column: "clip_embeddings" which contains the CLIP embedding of the images and produce a column "umap_x" and "umap_y" which contains the UMAP coordinates of the images based on the clip embeddings')
-    parser.add_argument('--json_path', type=str, help='path to the json file containing the image paths', default='../ads.jsonlines')
-    parser.add_argument('--output_path', type=str, help='path to the output pickle file',default='../real_estate.pkl')
-    parser.add_argument('--image_path', type=str, help='path to the folder containing the images', default='../images/')
+    parser.add_argument('--json_path', type=str, help='path to the json file containing the image paths', default='./ads.jsonlines')
+    parser.add_argument('--output_path', type=str, help='path to the output pickle file',default='./real_estate.pkl')
+    parser.add_argument('--image_path', type=str, help='path to the folder containing the images', default='../RealEstateCrawler/funda/data/images/')
     parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags', default=['labels'])
     parser.add_argument('--model_name', type=str, default='ViT-B/32', help='name of the CLIP model that should be used')
     parser.add_argument('--device', type=str, default='cpu', help='device that should be used to run the CLIP model on')

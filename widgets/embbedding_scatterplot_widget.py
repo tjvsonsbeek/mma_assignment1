@@ -44,6 +44,8 @@ class ScatterplotWidget(QWidget):
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.ax = self.figure.add_subplot(111)
+        # set title of the plot
+        self.ax.set_title("Make a selection on the plot with left and right click")
         self.zp = ZoomPan()
         self.figZoom = self.zp.zoom_factory(self.ax, base_scale = 1.5)
         self.figPan = self.zp.pan_factory(self.ax)

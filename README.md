@@ -22,10 +22,11 @@ Overall, this dashboard provides an interactive and informative interface for ex
 
 ## Instructions 
 
-1. **Create a python environement using the 'requirements.txt' file**
-2. **Prepare one of the datasets through the dataloading scripts/adapt it for your own dataset/download it from here:**
-2. **Define the locations of the dataset, the .pkl file and the .h5 file in config.ini**
-4. **Run the dashboard with the following command: "python main_window.py"**
+1. Create a python environement using the 'requirements.txt' file
+2. Prepare one of the datasets through the dataloading scripts/adapt it for your own dataset/download it from here:
+2. Define the locations of the dataset, the .pkl file and the .h5 file in config.ini
+4. Run the dashboard with the following command: "python main_window.py"
+5. Tip: if you get the following output and images don't show: 'pixmap is a null pixmap', the path to the images of you dataset is incorrect. 
 
 ## PyQt Basics
 

@@ -96,3 +96,7 @@ wcwidth @ file:///home/conda/feedstock_root/build_artifacts/wcwidth_167386465314
 wordcloud==1.8.2.2
 xmltodict==0.13.0
 zipp==3.15.0
+torch==2.0.0
+torchvision==0.15.1
+git+https://github.com/openai/CLIP.git
+umap-learn==0.5.3

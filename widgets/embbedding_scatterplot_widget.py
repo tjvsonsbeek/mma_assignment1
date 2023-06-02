@@ -45,7 +45,7 @@ class ScatterplotWidget(QWidget):
         self.canvas = FigureCanvas(self.figure)
         self.ax = self.figure.add_subplot(111)
         # set title of the plot
-        self.ax.set_title("Make a selection on the plot with left and right click")
+        self.ax.set_title("Left mouse drag selects data \nRight mouse drag moves the plot")
         self.zp = ZoomPan()
         self.figZoom = self.zp.zoom_factory(self.ax, base_scale = 1.5)
         self.figPan = self.zp.pan_factory(self.ax)
@@ -61,6 +61,7 @@ class ScatterplotWidget(QWidget):
         
         #connect the mouse press event to the selection method
         self.canvas.mpl_connect('button_press_event', self.on_canvas_click)
+        self.canvas.mpl_connect('button_release_event', self.on_canvas_release)
         #connect the mouse move event to the label method
         self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         # Set initial widget size
@@ -85,33 +86,36 @@ class ScatterplotWidget(QWidget):
         x, y = event.xdata, event.ydata
         # emit a signal with the current mouse position
         self.label.emit(f"Current Mouse Position: {x:.2f}, {y:.2f}")
-    
+
+    def on_canvas_release(self, event):
+        if event.inaxes is None:
+            print("Releasing click outside axes. Ignoring. Please click inside the axes of the scatterplot")
+            return
+        pass
+
+        if event.button == 1:
+            if self.start_point:
+                self.end_point = (event.xdata, event.ydata)
+                if self.start_point == self.end_point:
+                    return
+                self.draw_selection_rectangle()
+                # reset the drawing of the selected points
+                self.selected_points = []
+                self.draw_scatterplot()
+            self.start_point = None
+            self.end_point = None
+
     def on_canvas_click(self, event):
         """Method that handles mouse clicks on the canvas"""
         # Ignore clicks outside the plot area
         if event.inaxes is None:
-            print("click outside axes. Ignoring. Please click inside the axes of the scatterplot. With a right and left click you can select a rectangular region of points")
+            print("click outside axes. Ignoring. Please click inside the axes of the scatterplot")
             return
         # left click to select points
         if event.button == 1:
-            if not self.start_point:
-                self.start_point = (event.xdata, event.ydata)
-            else:
-                self.end_point = (event.xdata, event.ydata)
-                self.draw_selection_rectangle()
-                # reset the drawing of the selected points
-                self.selected_points = []
-                self.draw_scatterplot()
-        
-        # right click to select points
-        elif event.button == 3:
             self.start_point = (event.xdata, event.ydata)
-            if self.start_point and self.end_point:
-                self.draw_selection_rectangle()
-                # reset the drawing of the selected points
-                self.selected_points = []
-                self.draw_scatterplot()
-        
+            self.end_point = None
+
     def draw_selection_rectangle(self):
         """Method that draws the selection rectangle on the plot"""
         # get coordinates of the selection rectangle

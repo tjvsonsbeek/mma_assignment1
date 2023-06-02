@@ -30,7 +30,9 @@ Overall, this dashboard provides an interactive and informative interface for ex
 
 **Note** In case you get the following error while installing on ubuntu ```qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
 This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
-Available platform plugins are: minimalegl, offscreen, eglfs, vnc, wayland, wayland-egl, minimal, vkkhrdisplay, linuxfb, xcb.``` then run ```sudo apt install libxcb-cursor0```
+Available platform plugins are: minimalegl, offscreen, eglfs, vnc, wayland, wayland-egl, minimal, vkkhrdisplay, linuxfb, xcb.``` 
+
+then run ```sudo apt install libxcb-cursor0```
 
 ## PyQt Basics
 

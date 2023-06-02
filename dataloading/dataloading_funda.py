@@ -90,7 +90,7 @@ def argparser():
     parser.add_argument('--json_path', type=str, help='path to the json file containing the image paths', default='./ads.jsonlines')
     parser.add_argument('--output_path', type=str, help='path to the output pickle file',default='./real_estate.pkl')
     parser.add_argument('--image_features_path', type=str, help='path where the image features file will be written', default='./funda_image_features.h5')
-    parser.add_argument('--image_path', type=str, help='path to the folder containing the images', default='/home/gbfm/Workspaces/PyCharm/RealEstateCrawler/funda/data/images/')
+    parser.add_argument('--image_path', type=str, help='path to the folder containing the images', default='./images/')
     parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags', default=['labels'])
     parser.add_argument('--model_name', type=str, default='ViT-B/32', help='name of the CLIP model that should be used')
     parser.add_argument('--device', type=str, default='cpu', help='device that should be used to run the CLIP model on')

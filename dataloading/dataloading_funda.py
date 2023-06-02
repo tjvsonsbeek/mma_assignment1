@@ -30,7 +30,7 @@ def get_clip_embeddings(model_name, device, df, image_path, output_file):
                 image_input = image.unsqueeze(0).to(device)
                 image_features.append(model.encode_image(image_input).cpu().numpy())
             except Exception as ex:
-                traceback.print_exception(ex)
+                traceback.print_exc()
                 skipped_indices.append(i)
     # Print skipped indices
     print("Skipped Indices:", skipped_indices)

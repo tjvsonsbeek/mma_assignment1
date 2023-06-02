@@ -51,12 +51,11 @@ def make_tsne(data, n_components=2, perplexity=30, n_iter=1000, metric='cosine')
     return TSNE(n_components=n_components, perplexity=perplexity, n_iter=n_iter, metric=metric).fit_transform(data)
 
 
-def process_data(df, output_path, image_path, column_names, model_name, device):
-    output_file = "funda_image_features.h5"
-    get_clip_embeddings(model_name, device, df, image_path=image_path, output_file=output_file)
+def process_data(df, output_path, image_features_path, image_path, column_names, model_name, device):
+    get_clip_embeddings(model_name, device, df, image_path=image_path, output_file=image_features_path)
 
     # add the UMAP coordinates to the dataframe
-    with h5py.File(output_file, "r") as hf:
+    with h5py.File(image_features_path, "r") as hf:
         image_features = hf["image_features"][:]
     umap_embeddings = make_umap(image_features)
     df['umap_x'] = umap_embeddings[:, 0]
@@ -90,7 +89,8 @@ def argparser():
     parser = argparse.ArgumentParser(description='Load the Funda ads jsonlines file containing image_paths to real estate images and save the table in pickle format with an added column: "clip_embeddings" which contains the CLIP embedding of the images and produce a column "umap_x" and "umap_y" which contains the UMAP coordinates of the images based on the clip embeddings')
     parser.add_argument('--json_path', type=str, help='path to the json file containing the image paths', default='./ads.jsonlines')
     parser.add_argument('--output_path', type=str, help='path to the output pickle file',default='./real_estate.pkl')
-    parser.add_argument('--image_path', type=str, help='path to the folder containing the images', default='../RealEstateCrawler/funda/data/images/')
+    parser.add_argument('--image_features_path', type=str, help='path where the image features file will be written', default='./funda_image_features.h5')
+    parser.add_argument('--image_path', type=str, help='path to the folder containing the images', default='/home/gbfm/Workspaces/PyCharm/RealEstateCrawler/funda/data/images/')
     parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags', default=['labels'])
     parser.add_argument('--model_name', type=str, default='ViT-B/32', help='name of the CLIP model that should be used')
     parser.add_argument('--device', type=str, default='cpu', help='device that should be used to run the CLIP model on')
@@ -100,4 +100,4 @@ def argparser():
 if __name__ == '__main__':
     args = argparser()
     data = parse_real_estate_json(args.json_path)
-    process_data(data, args.output_path, args.image_path, args.column_names, args.model_name, args.device)
+    process_data(data, args.output_path, args.image_features_path, args.image_path, args.column_names, args.model_name, args.device)

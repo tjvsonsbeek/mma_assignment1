@@ -63,7 +63,7 @@ def argparser():
     parser.add_argument('--dataset_path', type=str, help='path to the csv file containing the image paths', default='../Datasets/similarPaintings')
     parser.add_argument('--csv_name', type=str, help='name of the csv file containing the image paths', default='artistic_visual_storytelling.csv')
     parser.add_argument('--output_path', type=str, help='path to the output pickle file',default='similarPaintings.pkl')
-    parser.add_argument('--image_features_path', type=str, help='path to the images', default='similarPaintings_image_features.h5')
+    parser.add_argument('--image_features_path', type=str, help='path where the image features file will be written', default='similarPaintings_image_features.h5')
     parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags', default=['tags'])
     parser.add_argument('--image_size', type=int, default=224, help='size of the images that should be loaded')
     parser.add_argument('--model_name', type=str, default='ViT-B/32', help='name of the CLIP model that should be used')

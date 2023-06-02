@@ -117,7 +117,7 @@ def argparser():
     parser = argparse.ArgumentParser(description='Load a csv file containing a column "image_paths" which contains paths to images and save the table in pickle format with an added column: "clip_embeddings" which contains the CLIP embedding of the images and produce a column "umap_x" and "umap_y" which contains the UMAP coordinates of the images based on the clip embeddings')
     parser.add_argument('--dataset_path', type=str, help='path to the csv file containing the image paths', default='../Datasets/openI')
     parser.add_argument('--output_path', type=str, help='path to the output pickle file',default='openI.pkl')
-    parser.add_argument('--image_features_path', type=str, help='path to the images', default='openI_image_features_1000.h5')
+    parser.add_argument('--image_features_path', type=str, help='path where the image features file will be written', default='openI_image_features_1000.h5')
     parser.add_argument('--column_names', nargs='+', help='list of column names that should be used to create the tags', default=['tags'])
     parser.add_argument('--image_size', type=int, default=224, help='size of the images that should be loaded')
     parser.add_argument('--model_name', type=str, default='ViT-B/32', help='name of the CLIP model that should be used')

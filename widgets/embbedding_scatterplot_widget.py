@@ -102,8 +102,6 @@ class ScatterplotWidget(QWidget):
                 # reset the drawing of the selected points
                 self.selected_points = []
                 self.draw_scatterplot()
-            self.start_point = None
-            self.end_point = None
 
     def on_canvas_click(self, event):
         """Method that handles mouse clicks on the canvas"""
@@ -114,7 +112,6 @@ class ScatterplotWidget(QWidget):
         # left click to select points
         if event.button == 1:
             self.start_point = (event.xdata, event.ydata)
-            self.end_point = None
 
     def draw_selection_rectangle(self):
         """Method that draws the selection rectangle on the plot"""
